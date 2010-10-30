@@ -27,6 +27,65 @@ Custom widget for field
                 fields = fields.Fields(IPerson)
                 fields['address'].widgetFactory = AddressWidget
 
+Datagrid Widget
+---------------
+
+.. code-block:: python 
+
+    from zope import schema
+    from zope.interface import Interface, implements
+    from zope.component import adapts
+    from z3c.form.interfaces import IObjectFactory
+    from plone.directives import form
+
+    class IContact(Interface):
+        name = schema.TextLine(
+            title=u'Name',
+            description=u'Enter a name',
+            required=True,
+        )
+        email = schema.TextLine(
+            title=u'Email',
+            description=u'Enter your email address',
+            required=False,
+        )
+            
+            
+    class Contact(object):
+        implements(IContact)
+        
+        def __init__(self, value):
+            self.name = value['name']
+            self.email = value['email']
+        
+    class ContactFactory(object):
+        adapts(Interface, Interface, Interface, Interface)
+        implements(IObjectFactory)
+
+        def __init__(self, context, request, form, widget):
+            pass
+        
+        def __call__(self, value):
+            return Contact(value)
+        
+    class ITestType(form.Schema):
+        contacts = schema.List(
+            title=u'Contacts',
+            description=u'Enter your contacts here',
+            required=False,
+            value_type=schema.Object(
+                title=u'Contacts',
+                schema = IContact,
+            ),
+        )   
+
+.. code-block:: xml
+
+    <adapter
+        factory=".testtype.ContactFactory"
+        name="dxtest.list.content.testtype.IContact"/>
+
+
 
 Form widget hints
 -----------------
